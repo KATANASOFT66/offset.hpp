@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPP Offsets - Raw</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --accent: #58a6ff;
+            --green: #7ee787;
+            --orange: #f0883e;
+            --red: #f85149;
+            --purple: #a371f7;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .topbar {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 0 16px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #58a6ff, #a371f7);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .file-name {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .file-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .file-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 12px;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background: var(--border);
+        }
+
+        .btn-icon {
+            padding: 6px 8px;
+        }
+
+        .btn-primary {
+            background: #238636;
+            border-color: #238636;
+        }
+
+        .btn-primary:hover {
+            background: #2ea043;
+        }
+
+        /* Format Selector */
+        .format-selector {
+            position: relative;
+        }
+
+        .format-btn {
+            min-width: 90px;
+            justify-content: space-between;
+        }
+
+        .format-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 4px;
+            min-width: 140px;
+            display: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+            z-index: 200;
+        }
+
+        .format-dropdown.show {
+            display: block;
+        }
+
+        .format-option {
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .format-option:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .format-option.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .format-option .ext {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        /* Code Area */
+        .code-wrapper {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .line-numbers {
+            background: var(--bg-secondary);
+            padding: 16px 0;
+            text-align: right;
+            user-select: none;
+            border-right: 1px solid var(--border);
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            min-width: 50px;
+            overflow-y: auto;
+        }
+
+        .line-numbers::-webkit-scrollbar {
+            display: none;
+        }
+
+        .line-num {
+            padding: 0 12px;
+            display: block;
+        }
+
+        .line-num:hover {
+            color: var(--text-secondary);
+        }
+
+        .code-container {
+            flex: 1;
+            overflow: auto;
+            background: var(--bg-primary);
+        }
+
+        .code-content {
+            padding: 16px 20px;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre;
+            color: var(--text-primary);
+            min-height: 100%;
+        }
+
+        /* Syntax Highlighting */
+        .hl-keyword { color: #ff7b72; }
+        .hl-type { color: #79c0ff; }
+        .hl-string { color: #a5d6ff; }
+        .hl-number { color: #79c0ff; }
+        .hl-comment { color: #8b949e; font-style: italic; }
+        .hl-variable { color: #ffa657; }
+        .hl-function { color: #d2a8ff; }
+        .hl-operator { color: #ff7b72; }
+        .hl-namespace { color: #7ee787; }
+        .hl-class { color: #f0883e; }
+        .hl-property { color: #79c0ff; }
+        .hl-value { color: #7ee787; }
+        .hl-bracket { color: #8b949e; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: var(--text-primary);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast i {
+            color: var(--green);
+        }
+
+        /* Back to table link */
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .topbar {
+                padding: 0 12px;
+                height: auto;
+                flex-wrap: wrap;
+                gap: 10px;
+                padding: 10px 12px;
+            }
+
+            .file-meta {
+                display: none;
+            }
+
+            .topbar-right {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .line-numbers {
+                min-width: 40px;
+                font-size: 12px;
+            }
+
+            .code-content {
+                font-size: 12px;
+                padding: 12px;
+            }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="index.html" class="logo">
+                <div class="logo-icon"><i class="fas fa-code"></i></div>
+                HPP
+            </a>
+            <div class="divider"></div>
+            <div class="file-info">
+                <span class="file-name" id="fileName">offsets.hpp</span>
+                <div class="file-meta">
+                    <span><i class="fas fa-code-branch"></i> <span id="version">-</span></span>
+                    <span><i class="far fa-clock"></i> <span id="updated">-</span></span>
+                    <span><i class="fas fa-hashtag"></i> <span id="lineCount">0</span> lines</span>
+                </div>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <a href="index.html" class="btn">
+                <i class="fas fa-table"></i> Table
+            </a>
+            
+            <div class="format-selector">
+                <button class="btn format-btn" id="formatBtn">
+                    <span id="currentFormat">C++</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="format-dropdown" id="formatDropdown">
+                    <div class="format-option active" data-format="cpp">C++ <span class="ext">.hpp</span></div>
+                    <div class="format-option" data-format="c">C <span class="ext">.h</span></div>
+                    <div class="format-option" data-format="csharp">C# <span class="ext">.cs</span></div>
+                    <div class="format-option" data-format="rust">Rust <span class="ext">.rs</span></div>
+                    <div class="format-option" data-format="python">Python <span class="ext">.py</span></div>
+                    <div class="format-option" data-format="lua">Lua <span class="ext">.lua</span></div>
+                    <div class="format-option" data-format="json">JSON <span class="ext">.json</span></div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="downloadFile()">
+                <i class="fas fa-download"></i>
+            </button>
+            <button class="btn btn-primary" onclick="copyCode()">
+                <i class="fas fa-copy"></i> Copy
+            </button>
+        </div>
+    </div>
+
+    <!-- Code Area -->
+    <div class="code-wrapper">
+        <div class="line-numbers" id="lineNumbers"></div>
+        <div class="code-container">
+            <pre class="code-content" id="codeContent"></pre>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check"></i>
+        <span id="toastText">Copied to clipboard</span>
+    </div>
+
+    <script src="offsets-data.js"></script>
+    <script>
+        // ==========================================
+        // RAW VIEW - PASTY STYLE
+        // ==========================================
+
+        let currentFormat = 'cpp';
+        let currentCode = '';
+
+        const formats = {
+            cpp: { name: 'C++', ext: 'hpp', mime: 'text/x-c++hdr' },
+            c: { name: 'C', ext: 'h', mime: 'text/x-chdr' },
+            csharp: { name: 'C#', ext: 'cs', mime: 'text/x-csharp' },
+            rust: { name: 'Rust', ext: 'rs', mime: 'text/x-rust' },
+            python: { name: 'Python', ext: 'py', mime: 'text/x-python' },
+            lua: { name: 'Lua', ext: 'lua', mime: 'text/x-lua' },
+            json: { name: 'JSON', ext: 'json', mime: 'application/json' }
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const format = params.get('format');
+            if (format && formats[format]) {
+                currentFormat = format;
+            }
+            
+            setupFormatSelector();
+            renderCode();
+            syncScroll();
+        });
+
+        // Format Selector
+        function setupFormatSelector() {
+            const btn = document.getElementById('formatBtn');
+            const dropdown = document.getElementById('formatDropdown');
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                dropdown.classList.toggle('show');
+            });
+
+            document.addEventListener('click', () => {
+                dropdown.classList.remove('show');
+            });
+
+            document.querySelectorAll('.format-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    currentFormat = opt.dataset.format;
+                    
+                    // Update active state
+                    document.querySelectorAll('.format-option').forEach(o => o.classList.remove('active'));
+                    opt.classList.add('active');
+                    
+                    // Update button text
+                    document.getElementById('currentFormat').textContent = formats[currentFormat].name;
+                    
+                    // Update URL
+                    const url = new URL(window.location);
+                    url.searchParams.set('format', currentFormat);
+                    window.history.replaceState({}, '', url);
+                    
+                    dropdown.classList.remove('show');
+                    renderCode();
+                });
+            });
+
+            // Set initial state
+            document.getElementById('currentFormat').textContent = formats[currentFormat].name;
+            document.querySelectorAll('.format-option').forEach(opt => {
+                opt.classList.toggle('active', opt.dataset.format === currentFormat);
+            });
+        }
+
+        // Sync scroll between line numbers and code
+        function syncScroll() {
+            const lineNumbers = document.getElementById('lineNumbers');
+            const codeContainer = document.querySelector('.code-container');
+
+            codeContainer.addEventListener('scroll', () => {
+                lineNumbers.scrollTop = codeContainer.scrollTop;
+            });
+        }
+
+        // Generate code
+        function generateCode(format) {
+            const o = offsetsData.offsets;
+            const v = offsetsData.version;
+            const d = offsetsData.lastUpdated;
+
+            switch (format) {
+                case 'cpp':
+                    return `<span class="hl-comment">// HPP Offsets</span>
+<span class="hl-comment">// Version: ${v}</span>
+<span class="hl-comment">// Updated: ${d}</span>
+
+<span class="hl-keyword">#pragma</span> once
+<span class="hl-keyword">#include</span> <span class="hl-string">&lt;cstdint&gt;</span>
+
+<span class="hl-keyword">namespace</span> <span class="hl-namespace">Offsets</span> <span class="hl-bracket">{</span>
+
+    <span class="hl-comment">// DataModel</span>
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">EnableLoadModule</span> <span class="hl-operator">=</span> <span class="hl-value">${o.EnableLoadModule}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">FakeDataModelPointer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelPointer}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">FakeDataModelToDataModel</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelToDataModel}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">GameLoaded</span> <span class="hl-operator">=</span> <span class="hl-value">${o.GameLoaded}</span>;
+
+    <span class="hl-comment">// Instance</span>
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">Children</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Children}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">ChildrenEnd</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ChildrenEnd}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">Name</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Name}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">Value</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Value}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">ClassDescriptor</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptor}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">ClassDescriptorToClassName</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptorToClassName}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">LocalPlayer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalPlayer}</span>;
+
+    <span class="hl-comment">// Task Scheduler</span>
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">TaskSchedulerPointer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerPointer}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">TaskSchedulerMaxFPS</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerMaxFPS}</span>;
+
+    <span class="hl-comment">// Script</span>
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">LocalScriptByteCode</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalScriptByteCode}</span>;
+    <span class="hl-keyword">inline</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">ModuleScriptByteCode</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ModuleScriptByteCode}</span>;
+
+    <span class="hl-comment">// Mouse Events</span>
+    <span class="hl-keyword">const</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">FireMouseClick</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseClick}</span>;
+    <span class="hl-keyword">const</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">FireRightMouseClick</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireRightMouseClick}</span>;
+    <span class="hl-keyword">const</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">FireMouseHoverEnter</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverEnter}</span>;
+    <span class="hl-keyword">const</span> <span class="hl-type">uintptr_t</span> <span class="hl-variable">FireMouseHoverLeave</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverLeave}</span>;
+
+<span class="hl-bracket">}</span>`;
+
+                case 'c':
+                    return `<span class="hl-comment">// HPP Offsets</span>
+<span class="hl-comment">// Version: ${v}</span>
+<span class="hl-comment">// Updated: ${d}</span>
+
+<span class="hl-keyword">#ifndef</span> HPP_OFFSETS_H
+<span class="hl-keyword">#define</span> HPP_OFFSETS_H
+
+<span class="hl-keyword">#include</span> <span class="hl-string">&lt;stdint.h&gt;</span>
+
+<span class="hl-comment">// DataModel</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_EnableLoadModule</span> <span class="hl-value">${o.EnableLoadModule}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_FakeDataModelPointer</span> <span class="hl-value">${o.FakeDataModelPointer}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_FakeDataModelToDataModel</span> <span class="hl-value">${o.FakeDataModelToDataModel}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_GameLoaded</span> <span class="hl-value">${o.GameLoaded}</span>
+
+<span class="hl-comment">// Instance</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_Children</span> <span class="hl-value">${o.Children}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_ChildrenEnd</span> <span class="hl-value">${o.ChildrenEnd}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_Name</span> <span class="hl-value">${o.Name}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_Value</span> <span class="hl-value">${o.Value}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_ClassDescriptor</span> <span class="hl-value">${o.ClassDescriptor}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_ClassDescriptorToClassName</span> <span class="hl-value">${o.ClassDescriptorToClassName}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_LocalPlayer</span> <span class="hl-value">${o.LocalPlayer}</span>
+
+<span class="hl-comment">// Task Scheduler</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_TaskSchedulerPointer</span> <span class="hl-value">${o.TaskSchedulerPointer}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_TaskSchedulerMaxFPS</span> <span class="hl-value">${o.TaskSchedulerMaxFPS}</span>
+
+<span class="hl-comment">// Script</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_LocalScriptByteCode</span> <span class="hl-value">${o.LocalScriptByteCode}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_ModuleScriptByteCode</span> <span class="hl-value">${o.ModuleScriptByteCode}</span>
+
+<span class="hl-comment">// Mouse Events</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_FireMouseClick</span> <span class="hl-value">${o.FireMouseClick}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_FireRightMouseClick</span> <span class="hl-value">${o.FireRightMouseClick}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_FireMouseHoverEnter</span> <span class="hl-value">${o.FireMouseHoverEnter}</span>
+<span class="hl-keyword">#define</span> <span class="hl-variable">OFFSET_FireMouseHoverLeave</span> <span class="hl-value">${o.FireMouseHoverLeave}</span>
+
+<span class="hl-keyword">#endif</span>`;
+
+                case 'csharp':
+                    return `<span class="hl-comment">// HPP Offsets</span>
+<span class="hl-comment">// Version: ${v}</span>
+<span class="hl-comment">// Updated: ${d}</span>
+
+<span class="hl-keyword">namespace</span> <span class="hl-namespace">HPP</span>
+<span class="hl-bracket">{</span>
+    <span class="hl-keyword">public static class</span> <span class="hl-class">Offsets</span>
+    <span class="hl-bracket">{</span>
+        <span class="hl-comment">// DataModel</span>
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">EnableLoadModule</span> <span class="hl-operator">=</span> <span class="hl-value">${o.EnableLoadModule}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">FakeDataModelPointer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelPointer}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">FakeDataModelToDataModel</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelToDataModel}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">GameLoaded</span> <span class="hl-operator">=</span> <span class="hl-value">${o.GameLoaded}</span>;
+
+        <span class="hl-comment">// Instance</span>
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">Children</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Children}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">ChildrenEnd</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ChildrenEnd}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">Name</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Name}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">Value</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Value}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">ClassDescriptor</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptor}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">ClassDescriptorToClassName</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptorToClassName}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">LocalPlayer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalPlayer}</span>;
+
+        <span class="hl-comment">// Task Scheduler</span>
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">TaskSchedulerPointer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerPointer}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">TaskSchedulerMaxFPS</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerMaxFPS}</span>;
+
+        <span class="hl-comment">// Script</span>
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">LocalScriptByteCode</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalScriptByteCode}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">ModuleScriptByteCode</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ModuleScriptByteCode}</span>;
+
+        <span class="hl-comment">// Mouse Events</span>
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">FireMouseClick</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseClick}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">FireRightMouseClick</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireRightMouseClick}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">FireMouseHoverEnter</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverEnter}</span>;
+        <span class="hl-keyword">public const</span> <span class="hl-type">ulong</span> <span class="hl-variable">FireMouseHoverLeave</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverLeave}</span>;
+    <span class="hl-bracket">}</span>
+<span class="hl-bracket">}</span>`;
+
+                case 'rust':
+                    return `<span class="hl-comment">// HPP Offsets</span>
+<span class="hl-comment">// Version: ${v}</span>
+<span class="hl-comment">// Updated: ${d}</span>
+
+<span class="hl-keyword">pub mod</span> <span class="hl-namespace">offsets</span> <span class="hl-bracket">{</span>
+    <span class="hl-comment">// DataModel</span>
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">ENABLE_LOAD_MODULE</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.EnableLoadModule}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">FAKE_DATA_MODEL_POINTER</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelPointer}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">FAKE_DATA_MODEL_TO_DATA_MODEL</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelToDataModel}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">GAME_LOADED</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.GameLoaded}</span>;
+
+    <span class="hl-comment">// Instance</span>
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">CHILDREN</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Children}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">CHILDREN_END</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ChildrenEnd}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">NAME</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Name}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">VALUE</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Value}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">CLASS_DESCRIPTOR</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptor}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">CLASS_DESCRIPTOR_TO_CLASS_NAME</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptorToClassName}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">LOCAL_PLAYER</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalPlayer}</span>;
+
+    <span class="hl-comment">// Task Scheduler</span>
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">TASK_SCHEDULER_POINTER</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerPointer}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">TASK_SCHEDULER_MAX_FPS</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerMaxFPS}</span>;
+
+    <span class="hl-comment">// Script</span>
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">LOCAL_SCRIPT_BYTE_CODE</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalScriptByteCode}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">MODULE_SCRIPT_BYTE_CODE</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ModuleScriptByteCode}</span>;
+
+    <span class="hl-comment">// Mouse Events</span>
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">FIRE_MOUSE_CLICK</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseClick}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">FIRE_RIGHT_MOUSE_CLICK</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireRightMouseClick}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">FIRE_MOUSE_HOVER_ENTER</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverEnter}</span>;
+    <span class="hl-keyword">pub const</span> <span class="hl-variable">FIRE_MOUSE_HOVER_LEAVE</span>: <span class="hl-type">usize</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverLeave}</span>;
+<span class="hl-bracket">}</span>`;
+
+                case 'python':
+                    return `<span class="hl-comment"># HPP Offsets</span>
+<span class="hl-comment"># Version: ${v}</span>
+<span class="hl-comment"># Updated: ${d}</span>
+
+<span class="hl-keyword">class</span> <span class="hl-class">Offsets</span>:
+    <span class="hl-comment"># DataModel</span>
+    <span class="hl-variable">EnableLoadModule</span> <span class="hl-operator">=</span> <span class="hl-value">${o.EnableLoadModule}</span>
+    <span class="hl-variable">FakeDataModelPointer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelPointer}</span>
+    <span class="hl-variable">FakeDataModelToDataModel</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelToDataModel}</span>
+    <span class="hl-variable">GameLoaded</span> <span class="hl-operator">=</span> <span class="hl-value">${o.GameLoaded}</span>
+
+    <span class="hl-comment"># Instance</span>
+    <span class="hl-variable">Children</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Children}</span>
+    <span class="hl-variable">ChildrenEnd</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ChildrenEnd}</span>
+    <span class="hl-variable">Name</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Name}</span>
+    <span class="hl-variable">Value</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Value}</span>
+    <span class="hl-variable">ClassDescriptor</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptor}</span>
+    <span class="hl-variable">ClassDescriptorToClassName</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptorToClassName}</span>
+    <span class="hl-variable">LocalPlayer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalPlayer}</span>
+
+    <span class="hl-comment"># Task Scheduler</span>
+    <span class="hl-variable">TaskSchedulerPointer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerPointer}</span>
+    <span class="hl-variable">TaskSchedulerMaxFPS</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerMaxFPS}</span>
+
+    <span class="hl-comment"># Script</span>
+    <span class="hl-variable">LocalScriptByteCode</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalScriptByteCode}</span>
+    <span class="hl-variable">ModuleScriptByteCode</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ModuleScriptByteCode}</span>
+
+    <span class="hl-comment"># Mouse Events</span>
+    <span class="hl-variable">FireMouseClick</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseClick}</span>
+    <span class="hl-variable">FireRightMouseClick</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireRightMouseClick}</span>
+    <span class="hl-variable">FireMouseHoverEnter</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverEnter}</span>
+    <span class="hl-variable">FireMouseHoverLeave</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverLeave}</span>`;
+
+                case 'lua':
+                    return `<span class="hl-comment">-- HPP Offsets</span>
+<span class="hl-comment">-- Version: ${v}</span>
+<span class="hl-comment">-- Updated: ${d}</span>
+
+<span class="hl-keyword">local</span> <span class="hl-variable">Offsets</span> <span class="hl-operator">=</span> <span class="hl-bracket">{</span>
+    <span class="hl-comment">-- DataModel</span>
+    <span class="hl-property">EnableLoadModule</span> <span class="hl-operator">=</span> <span class="hl-value">${o.EnableLoadModule}</span>,
+    <span class="hl-property">FakeDataModelPointer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelPointer}</span>,
+    <span class="hl-property">FakeDataModelToDataModel</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FakeDataModelToDataModel}</span>,
+    <span class="hl-property">GameLoaded</span> <span class="hl-operator">=</span> <span class="hl-value">${o.GameLoaded}</span>,
+
+    <span class="hl-comment">-- Instance</span>
+    <span class="hl-property">Children</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Children}</span>,
+    <span class="hl-property">ChildrenEnd</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ChildrenEnd}</span>,
+    <span class="hl-property">Name</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Name}</span>,
+    <span class="hl-property">Value</span> <span class="hl-operator">=</span> <span class="hl-value">${o.Value}</span>,
+    <span class="hl-property">ClassDescriptor</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptor}</span>,
+    <span class="hl-property">ClassDescriptorToClassName</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ClassDescriptorToClassName}</span>,
+    <span class="hl-property">LocalPlayer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalPlayer}</span>,
+
+    <span class="hl-comment">-- Task Scheduler</span>
+    <span class="hl-property">TaskSchedulerPointer</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerPointer}</span>,
+    <span class="hl-property">TaskSchedulerMaxFPS</span> <span class="hl-operator">=</span> <span class="hl-value">${o.TaskSchedulerMaxFPS}</span>,
+
+    <span class="hl-comment">-- Script</span>
+    <span class="hl-property">LocalScriptByteCode</span> <span class="hl-operator">=</span> <span class="hl-value">${o.LocalScriptByteCode}</span>,
+    <span class="hl-property">ModuleScriptByteCode</span> <span class="hl-operator">=</span> <span class="hl-value">${o.ModuleScriptByteCode}</span>,
+
+    <span class="hl-comment">-- Mouse Events</span>
+    <span class="hl-property">FireMouseClick</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseClick}</span>,
+    <span class="hl-property">FireRightMouseClick</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireRightMouseClick}</span>,
+    <span class="hl-property">FireMouseHoverEnter</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverEnter}</span>,
+    <span class="hl-property">FireMouseHoverLeave</span> <span class="hl-operator">=</span> <span class="hl-value">${o.FireMouseHoverLeave}</span>,
+<span class="hl-bracket">}</span>
+
+<span class="hl-keyword">return</span> <span class="hl-variable">Offsets</span>`;
+
+                case 'json':
+                    return `<span class="hl-bracket">{</span>
+    <span class="hl-property">"version"</span>: <span class="hl-string">"${v}"</span>,
+    <span class="hl-property">"updated"</span>: <span class="hl-string">"${d}"</span>,
+    <span class="hl-property">"offsets"</span>: <span class="hl-bracket">{</span>
+        <span class="hl-property">"EnableLoadModule"</span>: <span class="hl-string">"${o.EnableLoadModule}"</span>,
+        <span class="hl-property">"FakeDataModelPointer"</span>: <span class="hl-string">"${o.FakeDataModelPointer}"</span>,
+        <span class="hl-property">"FakeDataModelToDataModel"</span>: <span class="hl-string">"${o.FakeDataModelToDataModel}"</span>,
+        <span class="hl-property">"GameLoaded"</span>: <span class="hl-string">"${o.GameLoaded}"</span>,
+        <span class="hl-property">"Children"</span>: <span class="hl-string">"${o.Children}"</span>,
+        <span class="hl-property">"ChildrenEnd"</span>: <span class="hl-string">"${o.ChildrenEnd}"</span>,
+        <span class="hl-property">"Name"</span>: <span class="hl-string">"${o.Name}"</span>,
+        <span class="hl-property">"Value"</span>: <span class="hl-string">"${o.Value}"</span>,
+        <span class="hl-property">"ClassDescriptor"</span>: <span class="hl-string">"${o.ClassDescriptor}"</span>,
+        <span class="hl-property">"ClassDescriptorToClassName"</span>: <span class="hl-string">"${o.ClassDescriptorToClassName}"</span>,
+        <span class="hl-property">"LocalPlayer"</span>: <span class="hl-string">"${o.LocalPlayer}"</span>,
+        <span class="hl-property">"TaskSchedulerPointer"</span>: <span class="hl-string">"${o.TaskSchedulerPointer}"</span>,
+        <span class="hl-property">"TaskSchedulerMaxFPS"</span>: <span class="hl-string">"${o.TaskSchedulerMaxFPS}"</span>,
+        <span class="hl-property">"LocalScriptByteCode"</span>: <span class="hl-string">"${o.LocalScriptByteCode}"</span>,
+        <span class="hl-property">"ModuleScriptByteCode"</span>: <span class="hl-string">"${o.ModuleScriptByteCode}"</span>,
+        <span class="hl-property">"FireMouseClick"</span>: <span class="hl-string">"${o.FireMouseClick}"</span>,
+        <span class="hl-property">"FireRightMouseClick"</span>: <span class="hl-string">"${o.FireRightMouseClick}"</span>,
+        <span class="hl-property">"FireMouseHoverEnter"</span>: <span class="hl-string">"${o.FireMouseHoverEnter}"</span>,
+        <span class="hl-property">"FireMouseHoverLeave"</span>: <span class="hl-string">"${o.FireMouseHoverLeave}"</span>
+    <span class="hl-bracket">}</span>
+<span class="hl-bracket">}</span>`;
+            }
+        }
+
+        // Get plain text (no HTML)
+        function getPlainCode(format) {
+            const temp = document.createElement('div');
+            temp.innerHTML = generateCode(format);
+            return temp.textContent || temp.innerText;
+        }
+
+        // Render
+        function renderCode() {
+            const code = generateCode(currentFormat);
+            const lines = code.split('\n');
+            
+            // Update info
+            document.getElementById('fileName').textContent = `offsets.${formats[currentFormat].ext}`;
+            document.getElementById('version').textContent = offsetsData.version;
+            document.getElementById('updated').textContent = offsetsData.lastUpdated;
+            document.getElementById('lineCount').textContent = lines.length;
+
+            // Line numbers
+            document.getElementById('lineNumbers').innerHTML = 
+                lines.map((_, i) => `<span class="line-num">${i + 1}</span>`).join('\n');
+
+            // Code
+            document.getElementById('codeContent').innerHTML = code;
+        }
+
+        // Copy
+        function copyCode() {
+            const text = getPlainCode(currentFormat);
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Copied to clipboard');
+            });
+        }
+
+        // Download
+        function downloadFile() {
+            const text = getPlainCode(currentFormat);
+            const blob = new Blob([text], { type: formats[currentFormat].mime });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `offsets.${formats[currentFormat].ext}`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast('Download started');
+        }
+
+        // Toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastText').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+    </script>
+</body>
+</html>
