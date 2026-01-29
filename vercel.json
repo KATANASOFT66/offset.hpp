@@ -1,19 +1,10 @@
 {
-  "cleanUrls": false,
-  "trailingSlash": false,
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
-      ]
-    },
-    {
-      "source": "/(.*)\\.(hpp|h|cs|rs|py|lua|txt|json)",
-      "headers": [
         { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
-        { "key": "Content-Disposition", "value": "inline" },
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
+        { "key": "Content-Disposition", "value": "inline" }
       ]
     }
   ]
