@@ -1,17 +1,19 @@
 {
+  "cleanUrls": false,
+  "trailingSlash": false,
   "headers": [
     {
-      "source": "/(.*)\\.(hpp|h|cs|rs|py|lua|txt)",
+      "source": "/(.*)",
       "headers": [
-        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
-        { "key": "Content-Disposition", "value": "inline" }
+        { "key": "Access-Control-Allow-Origin", "value": "*" }
       ]
     },
     {
-      "source": "/(.*)\\.json",
+      "source": "/(.*)\\.(hpp|h|cs|rs|py|lua|txt|json)",
       "headers": [
-        { "key": "Content-Type", "value": "application/json; charset=utf-8" },
-        { "key": "Content-Disposition", "value": "inline" }
+        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Content-Disposition", "value": "inline" },
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate" }
       ]
     }
   ]
