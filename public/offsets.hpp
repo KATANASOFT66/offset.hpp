@@ -356,6 +356,15 @@ namespace Offsets {
         inline constexpr uintptr_t AtmosphereGlare = 0xEC;
         inline constexpr uintptr_t AtmosphereHaze = 0xF0;
         inline constexpr uintptr_t AtmosphereOffset = 0xF4;
+      //[Offset/PropertyDescriptor]
+//Name=0x8;
+//Scriptable=0x444;
+//
+//
+
+
+
     }
 }
+
 
