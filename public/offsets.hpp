@@ -1,7 +1,7 @@
 // HPP Offsets
 // Version: version-db4634f0e27d4d36
 // Updated: 2026-01-31
-
+// pro of ZENIX IDE
 #pragma once
 #include <cstdint>
 #include <string>
@@ -358,3 +358,4 @@ namespace Offsets {
         inline constexpr uintptr_t AtmosphereOffset = 0xF4;
     }
 }
+
